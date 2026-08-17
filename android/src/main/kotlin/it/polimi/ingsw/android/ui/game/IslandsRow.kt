@@ -6,13 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -36,16 +35,17 @@ fun IslandsRow(
     onIslandClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyRow(
+    FlowRow(
         modifier = modifier
             .fillMaxWidth()
-            .background(islandsBackdrop),
+            .background(islandsBackdrop)
+            .padding(12.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
-        contentPadding = PaddingValues(12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        items(islands.size) { index ->
+        islands.forEachIndexed { index, island ->
             IslandTile(
-                island = islands[index],
+                island = island,
                 islandNumber = index + 1,
                 hasMotherNature = index == motherNaturePosition,
                 onClick = { onIslandClick(index) },
@@ -58,7 +58,7 @@ fun IslandsRow(
 private fun IslandTile(island: IslandData, islandNumber: Int, hasMotherNature: Boolean, onClick: () -> Unit) {
     Box(
         modifier = Modifier
-            .width(104.dp)
+            .width(84.dp)
             .aspectRatio(1f)
             .clickable { onClick() },
         contentAlignment = Alignment.Center,

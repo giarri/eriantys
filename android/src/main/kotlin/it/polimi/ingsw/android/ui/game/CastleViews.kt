@@ -2,23 +2,28 @@ package it.polimi.ingsw.android.ui.game
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,6 +39,52 @@ private const val TOTAL_TOWERS_3_PLAYER = 6
 private const val TOTAL_TOWERS_DEFAULT = 8
 
 private fun totalTowersFor(nPlayer: Int) = if (nPlayer == 3) TOTAL_TOWERS_3_PLAYER else TOTAL_TOWERS_DEFAULT
+
+/** A rectangular "div" wrapped around a section title, e.g. "Towers", "Waiting room". */
+@Composable
+private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .padding(top = 10.dp, bottom = 4.dp)
+            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+    ) {
+        Text(text, style = MaterialTheme.typography.labelMedium)
+    }
+}
+
+/** Full-page castle view, reached from the board via a button instead of being shown inline. */
+@Composable
+fun CastleScreen(
+    myCastle: CastleData,
+    otherCastles: List<CastleData>,
+    nPlayer: Int,
+    selectedIndices: Set<Int>,
+    onStudentClick: (Int) -> Unit,
+    onConfirmMoveToDiningRoom: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            TextButton(onClick = onBack) { Text("← Back") }
+            Text("Castles", style = MaterialTheme.typography.titleLarge)
+        }
+        MyCastleView(
+            castle = myCastle,
+            nPlayer = nPlayer,
+            selectedIndices = selectedIndices,
+            onStudentClick = onStudentClick,
+            onConfirmMoveToDiningRoom = onConfirmMoveToDiningRoom,
+        )
+        SectionTitle("Other players", modifier = Modifier.padding(start = 12.dp))
+        OtherCastlesRow(otherCastles, nPlayer)
+    }
+}
 
 @Composable
 fun MyCastleView(
@@ -52,23 +103,23 @@ fun MyCastleView(
             contentScale = ContentScale.FillWidth,
         )
         Column(modifier = Modifier.padding(12.dp)) {
-            Text("My castle (${castle.username()})", style = MaterialTheme.typography.titleMedium)
+            SectionTitle("My castle (${castle.username()})")
 
-            Text("Towers", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 8.dp))
+            SectionTitle("Towers")
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 repeat(totalTowersFor(nPlayer) - castle.nTower()) {
                     TowerIcon(castle.towerColor())
                 }
             }
 
-            Text("Professors", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
+            SectionTitle("Professors")
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 StudentColor.values().forEach { color ->
                     TeacherSlot(color, owned = castle.teachers()[color] == castle.towerColor())
                 }
             }
 
-            Text("Waiting room", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
+            SectionTitle("Waiting room")
             FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 castle.waitingRoom().forEachIndexed { index, color ->
                     StudentIcon(color, size = 28.dp, selected = index in selectedIndices, onClick = { onStudentClick(index) })
@@ -78,7 +129,7 @@ fun MyCastleView(
                 Text("Move to dining room")
             }
 
-            Text("Dining room", style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(top = 12.dp))
+            SectionTitle("Dining room")
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 castle.diningRoom().forEach { (color, count) ->
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -128,7 +179,7 @@ private fun OtherCastleCard(castle: CastleData, nPlayer: Int) {
                 contentScale = ContentScale.FillWidth,
             )
             Column(modifier = Modifier.padding(8.dp)) {
-                Text(castle.username(), style = MaterialTheme.typography.labelLarge)
+                SectionTitle(castle.username())
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     TowerIcon(castle.towerColor(), size = 16.dp)
                     Text(" x${totalTowersFor(nPlayer) - castle.nTower()}", style = MaterialTheme.typography.labelSmall)
