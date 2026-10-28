@@ -25,7 +25,6 @@ dependencies {
 
     implementation(libs.log4j.core)
     implementation(libs.log4j.api)
-    implementation(libs.log4j.legacy)
     compileOnly(libs.jetbrains.annotations)
     testCompileOnly(libs.jetbrains.annotations)
 

@@ -44,4 +44,10 @@ public class ServerReceiver extends Receiver {
         }
     }
 
+    @Override
+    protected void onDisconnect() {
+        logger.info("Connection lost with port: " + socket.getPort());
+        client.endConnection();
+    }
+
 }

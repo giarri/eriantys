@@ -16,8 +16,9 @@ public class ServerMain implements Runnable {
 
     private static final Logger logger = LogManager.getLogger(ServerMain.class);
 
-    private int port;
-    private final int DEFAULT_PORT = 12345;
+    public static final int DEFAULT_PORT = 12345;
+
+    private final int port;
     private final ExecutorService executor = Executors.newCachedThreadPool();
     private ServerSocket serverSocket;
     private HeartBeatServer heartBeatServer;
@@ -41,10 +42,8 @@ public class ServerMain implements Runnable {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
-            logger.error(e.getMessage() + "address already in use");
-            e.printStackTrace();
-            port++;
-            startServer();
+            logger.error("Could not bind port " + port + " (" + e.getMessage() + "). Is another server already running?");
+            throw new IllegalStateException("Could not bind port " + port, e);
         }
         logger.info("ready on IP: " + serverSocket.getInetAddress() + " port: " + serverSocket.getLocalPort());
         heartBeatServer = new HeartBeatServer();
