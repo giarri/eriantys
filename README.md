@@ -202,8 +202,12 @@ The build produces a fat JAR (`desktop-3.0-all.jar`, all dependencies included) 
 ### Run
 
 ```bash
-# Start the server (port 12345)
+# Start the server (default port 12345)
 java -jar desktop/build/libs/desktop-3.0-all.jar server
+
+# Start the server on another port (--port wins over the ERIANTYS_PORT env var)
+java -jar desktop/build/libs/desktop-3.0-all.jar server --port 23456
+ERIANTYS_PORT=23456 java -jar desktop/build/libs/desktop-3.0-all.jar server
 
 # Graphical client
 java -jar desktop/build/libs/desktop-3.0-all.jar g-client
