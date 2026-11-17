@@ -7,7 +7,8 @@ import it.polimi.ingsw.communication.message.subclasses.*;
 import it.polimi.ingsw.server.model.baseLogic.*;
 import it.polimi.ingsw.server.model.exceptions.*;
 import it.polimi.ingsw.communication.AlertType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +23,7 @@ import java.util.random.RandomGenerator;
  */
 public class Game {
 
-    private final static Logger logger = Logger.getLogger(Game.class);
+    private final static Logger logger = LogManager.getLogger(Game.class);
     private final Board board;
     private final int MAX_STUDENTS_TO_MOVE;
     private int movedStudents = 0;

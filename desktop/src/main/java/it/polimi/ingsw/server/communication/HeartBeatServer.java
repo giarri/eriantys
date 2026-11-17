@@ -4,6 +4,7 @@ import it.polimi.ingsw.communication.message.subclasses.Ping;
 import org.apache.logging.log4j.*;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Class that implements the heart-beat protocol.
@@ -15,8 +16,8 @@ public class HeartBeatServer implements Runnable {
     private final static Logger logger = LogManager.getLogger(HeartBeatServer.class);
 
     private final int TIMEOUT = 5000; // [ms]
-    private final Set<Client> clients = new HashSet<>();
-    private final Set<Client> heartBeats = new HashSet<>();
+    private final Set<Client> clients = ConcurrentHashMap.newKeySet();
+    private final Set<Client> heartBeats = ConcurrentHashMap.newKeySet();
 
     /**
      * Adds a client to the connected clients list and starts the heartbeat on him as well
@@ -29,10 +30,9 @@ public class HeartBeatServer implements Runnable {
     /**Validate the connection with the client for another 5 seconds.
      * @param client the key in the Heartbeat server
      */
-    public synchronized void validateResponse(Client client) {
-        if (heartBeats.contains(client)) {
-            heartBeats.remove(client);
-            logger.info("Ping received from port: " + client.username() + ". Pinging back...");
+    public void validateResponse(Client client) {
+        if (heartBeats.remove(client)) {
+            logger.debug("Ping received from port: " + client.username() + ". Pinging back...");
         }
         else
             logger.info("client in port: " + client.username() + " shouldn't be connected");
@@ -46,16 +46,15 @@ public class HeartBeatServer implements Runnable {
             long previousTime = new Date().getTime();
             sendsPingToAll();
             waits(previousTime);
-            synchronized (heartBeats) {
-                heartBeats.forEach(this::removeClient);
-            }
+            // iterate over a copy: removeClient mutates heartBeats
+            new HashSet<>(heartBeats).forEach(this::removeClient);
         }
     }
 
     private void sendsPingToAll() {
         clients.forEach(client -> {
+            heartBeats.add(client); // before sending, so a fast reply isn't missed
             client.send(new Ping());
-            heartBeats.add(client);
         });
     }
 

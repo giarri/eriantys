@@ -30,12 +30,26 @@ public abstract class Receiver implements Runnable {
             try {
                 read = in.readLine();
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                break;
             }
-            messageSwitch(GsonProvider.get().fromJson(read, Message.class));
+            if (read == null) // the other end closed the connection
+                break;
+            Message message = GsonProvider.get().fromJson(read, Message.class);
+            if (message != null)
+                messageSwitch(message);
         }
+        onDisconnect();
     }
 
     protected abstract void messageSwitch(Message message);
+
+    /**
+     * Called once when the connection is lost. By default closes the socket.
+     */
+    protected void onDisconnect() {
+        try {
+            socket.close();
+        } catch (IOException ignored) {}
+    }
 
 }
