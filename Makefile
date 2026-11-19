@@ -13,11 +13,15 @@ AVDMANAGER := $(ANDROID_HOME)/cmdline-tools/latest/bin/avdmanager
 
 AVD_NAME ?= eriantys
 
-.PHONY: help server android-build android-install android-run avd emulator ip devices clean
+HOST ?= 10.0.2.2
+PORT ?= 12345
+
+.PHONY: help server server-config android-build android-install android-run avd emulator ip devices clean
 
 help:
 	@echo "Targets:"
 	@echo "  make server           Build (if needed) and run the game server (port 12345, hardcoded)"
+	@echo "  make server-config    Write HOST=<ip> PORT=<port> to client.local.properties (Android default server)"
 	@echo "  make android-build    Assemble the Android debug APK"
 	@echo "  make android-install  Install the debug APK on the first connected device/emulator"
 	@echo "  make android-run      Build, install, and launch the app on the first connected device/emulator"
@@ -32,6 +36,10 @@ help:
 server:
 	./gradlew :desktop:shadowJar -q
 	java -jar $$(ls desktop/build/libs/desktop-*-all.jar | head -1) server
+
+server-config:
+	printf 'android.server.host=$(HOST)\nserver.port=$(PORT)\n' > client.local.properties
+	@echo "client.local.properties -> $(HOST):$(PORT); rebuild the app with 'make android-run'"
 
 android-build:
 	./gradlew :android:assembleDebug -q

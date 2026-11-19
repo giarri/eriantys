@@ -31,6 +31,10 @@ fun EriantysNavHost(navController: NavHostController = rememberNavController()) 
             val viewModel: ConnectViewModel = viewModel()
             val uiState by viewModel.uiState.collectAsState()
 
+            // The server address is baked into the build (client.properties): connect straight
+            // away and only leave the manual screen visible if that fails.
+            LaunchedEffect(Unit) { viewModel.connect() }
+
             LaunchedEffect(uiState.isConnected) {
                 if (uiState.isConnected) {
                     navController.navigate(Routes.PREFERENCES)
