@@ -60,3 +60,20 @@ fun assistantCardRes(cardId: Int): Int = when (cardId) {
     9 -> R.drawable.assistant_9
     else -> R.drawable.assistant_10
 }
+
+/** Mirrors CharacterExplanation.getCSS(): the desktop's `.cardCharacter<Name>` background images. */
+@DrawableRes
+fun characterCardRes(name: String): Int = when (name.lowercase()) {
+    "monk" -> R.drawable.character_monk
+    "farmer" -> R.drawable.character_farmer
+    "guard" -> R.drawable.character_guard
+    "mailman" -> R.drawable.character_mailman
+    "witch" -> R.drawable.character_witch
+    "centaur" -> R.drawable.character_centaur
+    "jester" -> R.drawable.character_jester
+    "knight" -> R.drawable.character_knight
+    "cook" -> R.drawable.character_cook
+    "storyteller" -> R.drawable.character_storyteller
+    "queen" -> R.drawable.character_queen
+    else -> R.drawable.character_taxman
+}
