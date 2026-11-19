@@ -5,7 +5,7 @@
 ![Coverage](https://img.shields.io/badge/Coverage-88%25-brightgreen)
 ![Build](https://github.com/FedericoArcelaschi-Polimi/ingsw2022-AM01/actions/workflows/report.yml/badge.svg)
 
-**Eriantys** — a digital adaptation of the board game by [Cranio Creations](https://craniocreations.it/en/product/eriantys/).
+**Eriantys** — a digital adaptation of the board game by [Cranio Creations](https://craniocreations.it/en/products/eriantys/).
 
 > Software Engineering project — Politecnico di Milano, A.Y. 2021/2022
 
