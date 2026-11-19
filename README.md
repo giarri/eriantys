@@ -214,6 +214,15 @@ java -jar desktop/build/libs/desktop-3.0-all.jar t-client
 java -jar desktop/build/libs/desktop-3.0-all.jar tc
 ```
 
+### Configuring the server address
+
+The default server host/port the clients connect to is set at build time in [`client.properties`](client.properties)
+(`server.port`, `desktop.server.host`, `android.server.host`). It feeds the desktop GUI/CLI defaults and the Android
+app's `BuildConfig`. Override it without editing the tracked file by either:
+
+- creating a git-ignored `client.local.properties` with the same keys, or
+- passing `-Pserver.host=<host> -Pserver.port=<port>` to Gradle, e.g. `./gradlew :android:assembleDebug -Pserver.host=192.168.1.20`.
+
 A pre-built JAR and platform-specific launch scripts are also available under `Deliveries/play/`:
 
 | Script | Description |

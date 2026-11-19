@@ -34,6 +34,19 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+val clientConfig: Map<String, String> by rootProject.extra
+
+// Bakes the configured server address into the jar as /client.properties.
+tasks.processResources {
+    val host = (findProperty("server.host") as String?) ?: clientConfig["desktop.server.host"] ?: "localhost"
+    val port = (findProperty("server.port") as String?) ?: clientConfig["server.port"] ?: "12345"
+    inputs.property("host", host)
+    inputs.property("port", port)
+    doLast {
+        destinationDir.resolve("client.properties").writeText("server.host=$host\nserver.port=$port\n")
+    }
+}
+
 tasks.test {
     useJUnitPlatform()
     finalizedBy(tasks.jacocoTestReport)

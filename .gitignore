@@ -47,3 +47,6 @@ captures/
 /android/build
 /desktop/build
 /shared/build
+
+## Local client config override
+client.local.properties

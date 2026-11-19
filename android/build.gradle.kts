@@ -3,6 +3,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val clientConfig: Map<String, String> by rootProject.extra
+fun cfg(key: String, fallback: String) =
+    (findProperty(key) as String?) ?: clientConfig[key] ?: fallback
+
 android {
     namespace = "it.polimi.ingsw.android"
     compileSdk = 37
@@ -13,6 +17,9 @@ android {
         targetSdk = 37
         versionCode = 1
         versionName = "1.0"
+
+        buildConfigField("String", "DEFAULT_SERVER_HOST", "\"${cfg("server.host", cfg("android.server.host", "10.0.2.2"))}\"")
+        buildConfigField("int", "DEFAULT_SERVER_PORT", cfg("server.port", "12345"))
     }
 
     buildTypes {
@@ -29,6 +36,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
