@@ -1,209 +1,164 @@
 package it.polimi.ingsw.android.ui.game
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import it.polimi.ingsw.android.R
 import it.polimi.ingsw.communication.modelData.CastleData
 import it.polimi.ingsw.server.model.baseLogic.StudentColor
 
-private const val TOTAL_TOWERS_3_PLAYER = 6
-private const val TOTAL_TOWERS_DEFAULT = 8
+// Desktop castle geometry (GraphicCastle.java): a 290x675 panel made of a 150px tower garden,
+// a 70px professor row, a 347px dining room and a 108px waiting room. Everything below is
+// expressed in those desktop pixels and scaled by `width / CASTLE_W` so the panel keeps its look.
+private const val CASTLE_W = 290f
+private const val CASTLE_H = 675f
+private const val PROFESSORS_Y = 150f
+private const val DINING_Y = PROFESSORS_Y + 70f
+private const val WAITING_Y = DINING_Y + 347f
+private const val STUDENT = 25f
+private const val COLUMN_STEP = 47.5f
 
-private fun totalTowersFor(nPlayer: Int) = if (nPlayer == 3) TOTAL_TOWERS_3_PLAYER else TOTAL_TOWERS_DEFAULT
+private fun Modifier.placed(x: Float, y: Float, scale: Float) = offset((x * scale).dp, (y * scale).dp)
 
-/** A rectangular "div" wrapped around a section title, e.g. "Towers", "Waiting room". */
+private fun totalTowersFor(nPlayer: Int) = if (nPlayer == 3) 6 else 8
+
+/**
+ * The desktop's `GraphicCastle`: the castle artwork with towers on top, professors below them,
+ * the dining-room tables as five columns and the waiting room at the bottom.
+ * [onStudentClick] / [onDiningRoomClick] are null for read-only castles (other players').
+ */
 @Composable
-private fun SectionTitle(text: String, modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .padding(top = 10.dp, bottom = 4.dp)
-            .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(6.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-    ) {
-        Text(text, style = MaterialTheme.typography.labelMedium)
-    }
-}
-
-/** Full-page castle view, reached from the board via a button instead of being shown inline. */
-@Composable
-fun CastleScreen(
-    myCastle: CastleData,
-    otherCastles: List<CastleData>,
-    nPlayer: Int,
-    selectedIndices: Set<Int>,
-    onStudentClick: (Int) -> Unit,
-    onConfirmMoveToDiningRoom: () -> Unit,
-    onBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = onBack) { Text("← Back") }
-            Text("Castles", style = MaterialTheme.typography.titleLarge)
-        }
-        MyCastleView(
-            castle = myCastle,
-            nPlayer = nPlayer,
-            selectedIndices = selectedIndices,
-            onStudentClick = onStudentClick,
-            onConfirmMoveToDiningRoom = onConfirmMoveToDiningRoom,
-        )
-        SectionTitle("Other players", modifier = Modifier.padding(start = 12.dp))
-        OtherCastlesRow(otherCastles, nPlayer)
-    }
-}
-
-@Composable
-fun MyCastleView(
+fun CastlePanel(
     castle: CastleData,
     nPlayer: Int,
-    selectedIndices: Set<Int>,
-    onStudentClick: (Int) -> Unit,
-    onConfirmMoveToDiningRoom: () -> Unit,
+    width: Dp,
     modifier: Modifier = Modifier,
+    selectedIndices: Set<Int> = emptySet(),
+    onStudentClick: ((Int) -> Unit)? = null,
+    onDiningRoomClick: (() -> Unit)? = null,
 ) {
-    Box(modifier = modifier) {
+    val s = width.value / CASTLE_W
+    Box(modifier = modifier.size(width, (CASTLE_H * s).dp)) {
         Image(
             painter = painterResource(R.drawable.castle_bg),
             contentDescription = null,
-            modifier = Modifier.fillMaxWidth(),
-            contentScale = ContentScale.FillWidth,
+            modifier = Modifier.size(width, (CASTLE_H * s).dp),
+            contentScale = ContentScale.FillBounds,
         )
-        Column(modifier = Modifier.padding(12.dp)) {
-            SectionTitle("My castle (${castle.username()})")
 
-            SectionTitle("Towers")
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                repeat(totalTowersFor(nPlayer) - castle.nTower()) {
-                    TowerIcon(castle.towerColor())
-                }
-            }
-
-            SectionTitle("Professors")
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                StudentColor.values().forEach { color ->
-                    TeacherSlot(color, owned = castle.teachers()[color] == castle.towerColor())
-                }
-            }
-
-            SectionTitle("Waiting room")
-            FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                castle.waitingRoom().forEachIndexed { index, color ->
-                    StudentIcon(color, size = 28.dp, selected = index in selectedIndices, onClick = { onStudentClick(index) })
-                }
-            }
-            Button(onClick = onConfirmMoveToDiningRoom, enabled = selectedIndices.isNotEmpty(), modifier = Modifier.padding(top = 8.dp)) {
-                Text("Move to dining room")
-            }
-
-            SectionTitle("Dining room")
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                castle.diningRoom().forEach { (color, count) ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        StudentIcon(color, size = 20.dp)
-                        Text(" $count")
-                    }
-                }
-            }
-
-            Text(
-                "Coins: ${castle.coins()}",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 12.dp),
-            )
-            Text(
-                castle.lastPlayedCard()?.let { "Last played card: $it" } ?: "No card played yet",
-                style = MaterialTheme.typography.bodySmall,
-            )
+        // Tower garden: towers already placed on islands, zig-zagging in two rows.
+        val towerOffset = if (nPlayer == 3) 75f else 50f
+        var towerX = 50f
+        var towerY = 20f
+        repeat(totalTowersFor(nPlayer) - castle.nTower()) { i ->
+            TowerIcon(castle.towerColor(), Modifier.placed(towerX, towerY, s), size = (50f * s).dp)
+            if (i % 2 != 0) towerX += towerOffset
+            towerY = if (towerY == 20f) 90f else 20f
         }
-    }
-}
 
-@Composable
-fun OtherCastlesRow(
-    castles: List<CastleData>,
-    nPlayer: Int,
-    modifier: Modifier = Modifier,
-) {
-    LazyRow(modifier = modifier, horizontalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(12.dp)) {
-        items(castles) { castle ->
-            OtherCastleCard(castle, nPlayer)
+        // Professors: one slot per color, filled only when this castle owns the teacher.
+        StudentColor.values().forEachIndexed { i, color ->
+            if (castle.teachers()[color] == castle.towerColor()) {
+                TeacherIcon(color, Modifier.placed(32.5f + COLUMN_STEP * i, PROFESSORS_Y + 17f, s), size = (35f * s).dp)
+            }
         }
-    }
-}
 
-@Composable
-private fun OtherCastleCard(castle: CastleData, nPlayer: Int) {
-    Card(
-        modifier = Modifier.width(160.dp),
-        colors = CardDefaults.cardColors(containerColor = castle.towerColor().toComposeColor().copy(alpha = 0.15f)),
-    ) {
-        Box {
-            Image(
-                painter = painterResource(R.drawable.castle_bg),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth(),
-                contentScale = ContentScale.FillWidth,
-            )
-            Column(modifier = Modifier.padding(8.dp)) {
-                SectionTitle(castle.username())
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    TowerIcon(castle.towerColor(), size = 16.dp)
-                    Text(" x${totalTowersFor(nPlayer) - castle.nTower()}", style = MaterialTheme.typography.labelSmall)
-                }
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(androidx.compose.ui.graphics.Color.White.copy(alpha = 0.6f)),
-                ) {
-                    castle.diningRoom().forEach { (color, count) ->
-                        if (count > 0) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                StudentIcon(color, size = 14.dp)
-                                Text(":$count", style = MaterialTheme.typography.labelSmall)
-                            }
-                        }
-                    }
-                }
-                Text(
-                    castle.lastPlayedCard()?.let { "Last: $it" } ?: "No card yet",
-                    style = MaterialTheme.typography.labelSmall,
+        // Dining room: one column per color, students stacked from the bottom up. Tapping the
+        // room moves the selected waiting-room students into it, like clicking it on desktop.
+        Box(
+            modifier = Modifier
+                .placed(0f, DINING_Y, s)
+                .size(width, (347f * s).dp)
+                .then(if (onDiningRoomClick != null) Modifier.clickable { onDiningRoomClick() } else Modifier),
+        )
+        StudentColor.values().forEachIndexed { i, color ->
+            repeat(castle.diningRoom()[color] ?: 0) { k ->
+                StudentIcon(
+                    color,
+                    Modifier.placed(37f + COLUMN_STEP * i, DINING_Y + 13f + 287f - 32f * k, s),
+                    size = (STUDENT * s).dp,
                 )
             }
         }
+
+        // Waiting room: first student on the left, then pairs stacked in columns.
+        var x = 84.5f
+        var y = 16f
+        castle.waitingRoom().forEachIndexed { index, color ->
+            val (px, py) = if (index == 0) 37f to 16f else x to y
+            if (index > 0) {
+                if (index % 2 == 0) x += COLUMN_STEP
+                y = if (y == 16f) 55f else 16f
+            }
+            StudentIcon(
+                color,
+                Modifier.placed(px, WAITING_Y + py, s),
+                size = (STUDENT * s).dp,
+                selected = index in selectedIndices,
+                onClick = onStudentClick?.let { click -> { click(index) } },
+            )
+        }
     }
 }
+
+/** The desktop's `OtherGraphicCastle`: username / coins / last played card on top of the castle. */
+@Composable
+fun PlayerCastle(
+    castle: CastleData,
+    nPlayer: Int,
+    expert: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier.width(CASTLE_W.dp)) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(125.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Box(modifier = Modifier.width(100.dp)) {
+                Text(castle.username(), fontSize = 20.sp)
+            }
+            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.TopCenter) {
+                if (expert) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 25.dp)) {
+                        Text("${castle.coins()} x")
+                        CoinIcon(Modifier.padding(start = 10.dp), size = 50.dp)
+                    }
+                }
+            }
+            castle.lastPlayedCard()?.let { card ->
+                assistantIdOf(card)?.let { id ->
+                    Image(
+                        painter = painterResource(assistantCardRes(id)),
+                        contentDescription = "Last played card",
+                        modifier = Modifier.size(69.375.dp, 125.dp),
+                        contentScale = ContentScale.FillBounds,
+                    )
+                }
+            }
+        }
+        CastlePanel(castle, nPlayer, width = CASTLE_W.dp)
+    }
+}
+
+/** Inverse of the "[id, turnValue]" card format used by the server (see GuiDrawer.drawCards). */
+internal fun assistantIdOf(card: String): Int? =
+    (1..10).firstOrNull { card == "[$it, ${(it + 1) / 2}]" }
