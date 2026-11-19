@@ -47,6 +47,7 @@ class ConnectViewModel(application: Application) : AndroidViewModel(application)
     }
 
     fun connect() {
+        if (networkController.connected.value || _uiState.value.isConnecting) return
         val port = _uiState.value.port.toIntOrNull() ?: return
         val host = _uiState.value.host.trim()
         if (host.isEmpty()) return
