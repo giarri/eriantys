@@ -2,6 +2,7 @@ package it.polimi.ingsw.client.userInterface.cli;
 
 import it.polimi.ingsw.client.communication.ClientMain;
 import it.polimi.ingsw.client.communication.ClientState;
+import it.polimi.ingsw.client.userInterface.ClientConfig;
 import it.polimi.ingsw.client.userInterface.UserInterface;
 import it.polimi.ingsw.communication.message.subclasses.EndGame;
 import it.polimi.ingsw.communication.message.subclasses.LobbyInfo;
@@ -30,7 +31,7 @@ public class Cli implements UserInterface, DefaultConversations {
     private final long READ_TIME = 50;
     private String input = "";
     private boolean firstUpdate = true;
-    private final SocketAddress DEFAULT_ADDRESS = new InetSocketAddress("localhost", 12345);
+    private final SocketAddress DEFAULT_ADDRESS = ClientConfig.defaultAddress();
 
     public Cli() {
         clientMain = new ClientMain(this);

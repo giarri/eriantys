@@ -3,6 +3,7 @@ package it.polimi.ingsw.android.ui.connect
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import it.polimi.ingsw.android.BuildConfig
 import it.polimi.ingsw.android.EriantysApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,8 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class ConnectUiState(
-    val host: String = "",
-    val port: String = "12345",
+    val host: String = BuildConfig.DEFAULT_SERVER_HOST,
+    val port: String = BuildConfig.DEFAULT_SERVER_PORT.toString(),
     val isConnecting: Boolean = false,
     val isConnected: Boolean = false,
     val lastError: String? = null,

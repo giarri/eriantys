@@ -1,5 +1,6 @@
 package it.polimi.ingsw.client.userInterface.gui.controller;
 
+import it.polimi.ingsw.client.userInterface.ClientConfig;
 import it.polimi.ingsw.communication.message.subclasses.LobbyInfo;
 import it.polimi.ingsw.communication.message.subclasses.Preferences;
 import it.polimi.ingsw.server.controller.GameType;
@@ -34,6 +35,8 @@ public class LoginPaneController {
         player3RadioButton.setToggleGroup(nPlayer);
         player4RadioButton.setToggleGroup(nPlayer);
         expertModeButton.setSelected(false);
+        ipTextField.setPromptText(ClientConfig.host());
+        portTextField.setPromptText(String.valueOf(ClientConfig.port()));
         this.connect = connect;
         this.sendPreferences = sendPreferences;
         preferencesPane.setVisible(true);
